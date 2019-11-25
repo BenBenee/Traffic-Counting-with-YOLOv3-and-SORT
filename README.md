@@ -1,5 +1,5 @@
 ## Introduction
-A vehicle counter with keras-YOLOv3 from https://github.com/qqwweee/keras-yolo3.git and SORT algorithm for tracking from https://github.com/guillelopez/python-traffic-counter-with-yolo-and-sort.git
+A vehicle counter with keras-YOLOv3 from https://github.com/qqwweee/keras-yolo3.git and SORT algorithm for tracking
 
 I used my own dataset here, I trained about 2300 images. So I guess you can train your model with more images
 
