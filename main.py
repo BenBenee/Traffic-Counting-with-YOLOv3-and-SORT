@@ -16,7 +16,6 @@ def main(yolo):
     memory = {}
     line1 = [(455, 384), (827, 384)] #Put your lines coordinate here
     line2 = [(879,523), (1641,747)]
-    lineViol = [(922,426), (1440,495)]
     
     # construct the argument parse and parse the arguments
     ap = argparse.ArgumentParser()
