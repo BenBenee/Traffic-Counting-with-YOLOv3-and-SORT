@@ -137,53 +137,44 @@ class YOLO(object):
         detected_class = []
         
         for i, c in reversed(list(enumerate(out_classes))):
-            if predicted_class in class_used:
-                predicted_class = self.class_names[c]
-                box = out_boxes[i]
-                score = out_scores[i]
+            predicted_class = self.class_names[c]
+            box = out_boxes[i]
+            score = out_scores[i]
 
-                label = '{} {:.2f}'.format(predicted_class, score)
-                draw = ImageDraw.Draw(image)
-                label_size = draw.textsize(label, font)
+            label = '{} {:.2f}'.format(predicted_class, score)
+            draw = ImageDraw.Draw(image)
+            label_size = draw.textsize(label, font)
 
-                top, left, bottom, right = box
-                top = max(0, np.floor(top + 0.5).astype('int32'))
-                left = max(0, np.floor(left + 0.5).astype('int32'))
-                bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
-                right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
-                midBoxYOLO = [int((right+left)/2),int((top+bottom)/2)]
-                print(label, (left, top), (right, bottom), midBoxYOLO)
-                confidences.append(float(score))
-                midPoint.append(midBoxYOLO)
-                detected_class.append(predicted_class)
+            top, left, bottom, right = box
+            top = max(0, np.floor(top + 0.5).astype('int32'))
+            left = max(0, np.floor(left + 0.5).astype('int32'))
+            bottom = min(image.size[1], np.floor(bottom + 0.5).astype('int32'))
+            right = min(image.size[0], np.floor(right + 0.5).astype('int32'))
+            midBoxYOLO = [int((right+left)/2),int((top+bottom)/2)]
+            print(label, (left, top), (right, bottom), midBoxYOLO)
+            confidences.append(float(score))
+            midPoint.append(midBoxYOLO)
+            detected_class.append(predicted_class)
             
-                if top - label_size[1] >= 0:
-                    text_origin = np.array([left, top - label_size[1]])
-                else:
-                    text_origin = np.array([left, top + 1])
+            if top - label_size[1] >= 0:
+                text_origin = np.array([left, top - label_size[1]])
+            else:
+                text_origin = np.array([left, top + 1])
 
-            # My kingdom for a good redistributable image drawing library.
-                draw.rectangle(
-                    [tuple(text_origin), tuple(text_origin + label_size)],
-                    fill=self.colors[c])
-                draw.text(text_origin, label, fill=(0, 0, 0), font=font)
-
-                del draw
-
-                box = out_boxes[i]
-                x = int(box[1])  
-                y = int(box[0])  
-                w = int(box[3]-box[1])
-                h = int(box[2]-box[0])
-                if x < 0 :
-                    w = w + x
-                    x = 0
-                if y < 0 :
-                    h = h + y
-                    y = 0 
-                return_boxs.append([x,y,w,h])
+            box = out_boxes[i]
+            x = int(box[1])  
+            y = int(box[0])  
+            w = int(box[3]-box[1])
+            h = int(box[2]-box[0])
+            if x < 0 :
+                w = w + x
+                x = 0
+            if y < 0 :
+                h = h + y
+                y = 0 
+            return_boxs.append([x,y,w,h])
             
-            return return_boxs, detected_class, confidences, midPoint
+        return return_boxs, detected_class, confidences, midPoint
     
     def counter(self,p0, out_class, midPoint):
         for mid in midPoint:
