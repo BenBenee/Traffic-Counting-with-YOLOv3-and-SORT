@@ -147,10 +147,6 @@ def main(yolo):
                         else:
                             truck2 = truck2 + 1
                             
-                    if p0[0] > 921 and p0[0] < 1440 and p0[1] < 606 and p0[1] > 437:
-                        p0Memory = p0
-                        state = True
-                        if 
                             
                 # text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
                 text = "{}".format(indexIDs[i])
