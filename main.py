@@ -9,13 +9,16 @@ import os
 from yolo import YOLO 
 from PIL import Image, ImageDraw, ImageFont
 from sort import *
+import tensorflow as tf
+from timeit import default_timer as timer
 
 
 def main(yolo):
     tracker = Sort()
     memory = {}
-    line1 = [(455, 384), (827, 384)] #Put your lines coordinate here
-    line2 = [(879,523), (1641,747)]
+    line1 = [(494, 462), (811, 462)]
+    line2 = [(976,630), (1677,822)]    
+
     
     # construct the argument parse and parse the arguments
     ap = argparse.ArgumentParser()
@@ -42,11 +45,12 @@ def main(yolo):
 
     # initialize the video stream, pointer to output video file, and
     # frame dimensions
-    vs = cv2.VideoCapture('video.avi')
+    #Put your video path here
+    vs = cv2.VideoCapture('video_path.mp4')
     writer = None
     (W, H) = (None, None)
     
-    font = ImageFont.truetype(font='/font/FiraMono-Medium.otf', size=40)
+    font = ImageFont.truetype(font='../font/FiraMono-Medium.otf', size=40)
     
     frameIndex = 0
     car = 0
@@ -58,10 +62,13 @@ def main(yolo):
     bus2 = 0
     truck2 = 0
     # loop over frames from the video file stream
+    prev_time = timer()
+    accum_time = 0
+    curr_fps = 0
     while True:
         # read the next frame from the file
         (grabbed, frame) = vs.read()
-  
+        
         # if the frame was not grabbed, then we have reached the end
         # of the stream
         if not grabbed:
@@ -78,7 +85,7 @@ def main(yolo):
         # apply non-maxima suppression to suppress weak, overlapping
         # bounding boxes
 
-        idxs = cv2.dnn.NMSBoxes(boxes, confidences, 0.4, 0.4)
+        idxs = cv2.dnn.NMSBoxes(boxes, confidences, 0.4, 0.2)
 
         dets = []
         if len(idxs) > 0:
@@ -102,7 +109,7 @@ def main(yolo):
             boxes.append([track[0], track[1], track[2], track[3]])
             indexIDs.append(int(track[4]))
             memory[indexIDs[-1]] = boxes[-1]
-
+                
         if len(boxes) > 0:
             i = int(0)
             for box in boxes:
@@ -146,8 +153,12 @@ def main(yolo):
                             bus2 = bus2+1
                         else:
                             truck2 = truck2 + 1
-                            
-                            
+                    '''        
+                    if p0[0] > 921 and p0[0] < 1440 and p0[1] < 606 and p0[1] > 437:
+                        p0Memory = p0
+                        state = True
+                        if 
+                    '''        
                 # text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
                 text = "{}".format(indexIDs[i])
                 cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
@@ -160,12 +171,22 @@ def main(yolo):
         
         frame = np.asarray(frame)
         # draw line
-        cv2.line(frame, line1[0], line1[1], (0, 255, 255), 5)
-        cv2.line(frame, line2[0], line2[1], (0, 255, 255), 5)
+        cv2.line(frame, line1[0], line1[1], (0, 255, 255), 1)
+        cv2.line(frame, line2[0], line2[1], (0, 255, 255), 1)
 
         # draw counter
         # counter += 1
-
+        curr_time = timer()
+        exec_time = curr_time - prev_time
+        prev_time = curr_time
+        accum_time = accum_time + exec_time
+        curr_fps = curr_fps + 1
+        if accum_time > 1:
+            accum_time = accum_time - 1
+            fps = "FPS: " + str(curr_fps)
+            curr_fps = 0
+        cv2.putText(frame, text=fps, org=(3, 30), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                    fontScale=0.8, color=(255, 0, 0), thickness=1)
         # check if the video writer is None
         if writer is None:
             # initialize our video writer
@@ -176,6 +197,11 @@ def main(yolo):
 
         # write the output frame to disk
         writer.write(frame)
+        
+        cv2.namedWindow("hasil", cv2.WINDOW_NORMAL)
+        cv2.resizeWindow("hasil", 904, 544)
+        cv2.imshow('hasil',frame)
+        cv2.waitKey(1)
 
         # increase frame index
         frameIndex += 1
@@ -186,4 +212,7 @@ def main(yolo):
     vs.release()
 
 if __name__ == '__main__':
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    tf.keras.backend.set_session(tf.Session(config=config))
     main(YOLO())
